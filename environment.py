@@ -10,11 +10,13 @@ class environment:
     Snake game on a square maze of size maze_size, snake with initial size of initial_snake_size.
     Instead of a single mouse, there may be multiple mice. Their points are given by mice_points list.
     """
-    def __init__(self, maze_size=10, initial_snake_size=5, mice_points=[1,2,3]):
+    def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3], fixed_obstacles=[(3,4),(3,5),(3,6)]):
         score = 0
         snake_q = Queue()
-        # obstacles are walls + the snake itself
+        # obstacles are walls + fixed obstacles + the snake itself
         obstacles = set()
+        for obs in fixed_obstacles:
+            obstacles.add(obs)
         # maze walls
         for i in range (maze_size):
             obstacles.add( (-1       ,i        ) );
