@@ -1,4 +1,4 @@
-from queue import *
+from collections import deque
 import random
 
 def test():
@@ -23,7 +23,7 @@ class environment:
             
         else:
             self.score = 0
-            self.snake_q = Queue()
+            self.snake_q = deque()
             # obstacles are walls + fixed obstacles + the snake itself
             self.obstacles = set()
             for obs in fixed_obstacles:
@@ -37,7 +37,7 @@ class environment:
             # snake
             for i in range (initial_snake_size):
                 self.obstacles.add( (0,i) )
-                self.snake_q.put( (0,i) )
+                self.snake_q.append( (0,i) )
             self.head = (0,initial_snake_size-1)
             self.curr_direction = 0
             # mice = dict{ key=coordinate, value=points }
@@ -57,7 +57,7 @@ class environment:
             return True
         # adds new position
         self.obstacles.add(self.head)
-        self.snake_q.put(self.head)
+        self.snake_q.append(self.head)
         self.curr_direction = direction
         # checks if ate a mouse
         if self.head in self.mice:
@@ -71,7 +71,7 @@ class environment:
             self.mice[coord] = points 
         else:
             # remove tail
-            self.obstacles.remove(self.snake_q.get())
+            self.obstacles.remove(self.snake_q.popleft())
         return False
         
     def see_maze(self):
