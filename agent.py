@@ -1,6 +1,7 @@
 from environment import environment
 import copy
 import numpy as np
+from math import sqrt
 
 # mov[direction] is the displacement for the snake's head.
 mov = [(0,1), (0,-1), (1,0), (-1,0)]
@@ -20,17 +21,21 @@ def size_of_accessible_region(state):
         return size
     
     obstacles, mice, head, curr_direction, score, game_terminated = state
-    
     tmp = obstacles.copy()
     tmp.remove(head)
     return DFS(tmp, head)
 
 def reward(state):
     obstacles, mice, head, curr_direction, score, game_terminated = state
+    proximity_to_mice = 0
+    for coord,points in mice.items():
+        dist_to_mouse = sqrt((head[0]-coord[0])**2 + (head[1]-coord[1])**2)
+        if dist_to_mouse != 0:
+            proximity_to_mice += points / dist_to_mouse
     if game_terminated:
         return 10 * score - 100100100
     else:
-        return 10 * score + size_of_accessible_region(state)
+        return 10 * score + size_of_accessible_region(state) + proximity_to_mice
 
 
 def power_list(list_, power):
@@ -58,7 +63,7 @@ def get_max_from_power_list(power_list_):
 
 env = environment()
 hit_an_obstacle = False
-depth = 3 ######### parameter to change ##########
+depth = 5 ######### parameter to change ##########
 while hit_an_obstacle == False:
     pl = power_list([0,0,0,0], depth)
     rewards = get_rewards_in_power_list(env, pl)
@@ -66,6 +71,8 @@ while hit_an_obstacle == False:
     env.move(optimal_direction)
     obstacles, mice, head, curr_direction, score, game_terminated = env.get_state()
     hit_an_obstacle = game_terminated
+    
+    env.print_maze()
 
 # just to test
 state = env.get_state()
