@@ -11,6 +11,7 @@ class environment:
     Instead of a single mouse, there may be multiple mice. Their points are given by mice_points list.
     """
     def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3], fixed_obstacles=[(3,4),(3,5),(3,6)]):
+        self.game_terminated = False
         self.score = 0
         self.snake_q = deque()
         # obstacles are walls + fixed obstacles + the snake itself
@@ -38,33 +39,32 @@ class environment:
                 coord = (random.randint(0,maze_size), random.randint(0,maze_size))
             self.mice[coord] = i
         
-    # returns true if the game has ended. False othersie.
     def move(self, direction):
         self.head = (self.head[0]+environment.mov[direction][0], self.head[1]+environment.mov[direction][1])
         # checks if snake hits an obstacle
         if self.head in self.obstacles:
-            return True
-        # adds new position
-        self.obstacles.add(self.head)
-        self.snake_q.append(self.head)
-        self.curr_direction = direction
-        # checks if ate a mouse
-        if self.head in self.mice:
-            points = self.mice[self.head]
-            self.score += points
-            # replace eaten mouse in a random position (without another mouse or the snake).
-            del self.mice[self.head]
-            coord = self.head
-            while (coord in self.mice or coord in self.obstacles):
-                coord = (random.randint(0,self.maze_size), random.randint(0,self.maze_size))
-            self.mice[coord] = points 
+            self.game_terminated = True
         else:
-            # remove tail
-            self.obstacles.remove(self.snake_q.popleft())
-        return False
+            # adds new position
+            self.obstacles.add(self.head)
+            self.snake_q.append(self.head)
+            self.curr_direction = direction
+            # checks if ate a mouse
+            if self.head in self.mice:
+                points = self.mice[self.head]
+                self.score += points
+                # replace eaten mouse in a random position (without another mouse or the snake).
+                del self.mice[self.head]
+                coord = self.head
+                while (coord in self.mice or coord in self.obstacles):
+                    coord = (random.randint(0,self.maze_size), random.randint(0,self.maze_size))
+                self.mice[coord] = points 
+            else:
+                # remove tail
+                self.obstacles.remove(self.snake_q.popleft())
         
     def see_maze(self):
-        return (self.obstacles, self.mice, self.head, self.curr_direction, self.score)
+        return (self.obstacles, self.mice, self.head, self.curr_direction, self.score, self.game_terminated)
 
     def print_maze(self):
         print('score =', self.score)
