@@ -30,7 +30,7 @@ env = environment()
 
 # just to test
 state = env.see_maze()
-obstacles, mice, head, curr_direction = state
+obstacles, mice, head, curr_direction, score = state
 #print(obstacles)
 print(mice)
 print(head)
