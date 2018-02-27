@@ -67,4 +67,4 @@ class environment:
         return false
         
     def see_maze(self):
-        return self.obstacles, self.mice
+        return (self.obstacles, self.mice, self.head, self.curr_direction, self.score)
