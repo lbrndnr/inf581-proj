@@ -46,7 +46,7 @@ class environment:
         self.head = (self.head[0]+mov[direction][0], self.head[1]+mov[direction][1])
         # checks if snake hits an obstacle
         if self.head in self.obstacles:
-            return true
+            return True
         # adds new position
         self.obstacles.add(self.head)
         self.snake_q.add(self.head)
@@ -64,7 +64,7 @@ class environment:
         else:
             # remove tail
             self.obstacles.remove(self.snake_q.get())
-        return false
+        return False
         
     def see_maze(self):
         return (self.obstacles, self.mice, self.head, self.curr_direction, self.score)
