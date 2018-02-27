@@ -20,7 +20,7 @@ def size_of_accessible_region(state):
         return size
     
     obstacles, mice, head, curr_direction, score, game_terminated = state
-     
+    
     tmp = obstacles.copy()
     tmp.remove(head)
     return DFS(tmp, head)
@@ -28,7 +28,7 @@ def size_of_accessible_region(state):
 def reward(state):
     obstacles, mice, head, curr_direction, score, game_terminated = state
     if game_terminated:
-        return 10 * score + size_of_accessible_region(state) - 100100100
+        return 10 * score - 100100100
     else:
         return 10 * score + size_of_accessible_region(state)
 
