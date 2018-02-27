@@ -22,6 +22,10 @@ def size_of_accessible_region(state):
     tmp.remove(head)
     return DFS(tmp, head)
 
+def reward(state):
+    obstacles, mice, head, curr_direction, score = state
+    return 10 * score + size_of_accessible_region(state)
+
 env = environment()
 
 
