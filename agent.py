@@ -1,5 +1,6 @@
 from environment import environment
 import copy
+import numpy as np
 
 # mov[direction] is the displacement for the snake's head.
 mov = [(0,1), (0,-1), (1,0), (-1,0)]
@@ -38,16 +39,22 @@ def power_list(list_, power):
     else:
         return [power_list(list_, power - 1) for i in list_]
 
-def get_rewards_in_power_list(env_to_copy, power_list):
-    if type(power_list) is list:    
+def get_rewards_in_power_list(env_to_copy, power_list_):
+    if type(power_list_) is list:    
         to_return = []
-        for i,inner_pl in enumerate(power_list):
-            tmp_environmnet = copy.deepcopy(env_to_copy)
-            tmp_environmnet.move(i)
-            to_return.append(get_rewards_in_power_list(tmp_environmnet, inner_pl))
+        for i,inner_pl in enumerate(power_list_):
+            tmp_environment = copy.deepcopy(env_to_copy)
+            tmp_environment.move(i)
+            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl))
         return to_return
     else:
        return reward(env_to_copy.get_state()) 
+
+def get_max_from_power_list(power_list_):
+    if type(power_list_) is list:
+        return max([get_max_from_power_list(inner_pl) for inner_pl in power_list_])
+    else:
+        return power_list_     
 
 env = environment()
 hit_an_obstacle = False
@@ -55,9 +62,10 @@ depth = 3 ######### parameter to change ##########
 while hit_an_obstacle == False:
     pl = power_list([0,0,0,0], depth)
     rewards = get_rewards_in_power_list(env, pl)
-    # to do
-    
-    
+    optimal_direction = np.argmax([get_max_from_power_list(rewards[i]) for i in range(4)])        
+    env.move(optimal_direction)
+    obstacles, mice, head, curr_direction, score, game_terminated = env.get_state()
+    hit_an_obstacle = game_terminated
 
 # just to test
 state = env.get_state()
