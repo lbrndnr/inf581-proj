@@ -1,4 +1,4 @@
-from environment import *
+from environment import environment
 
 # mov[direction] is the displacement for the snake's head.
 mov = [(0,1), (0,-1), (1,0), (-1,0)]
@@ -27,8 +27,6 @@ def reward(state):
     return 10 * score + size_of_accessible_region(state)
 
 env = environment()
-
-
 
 
 
