@@ -43,9 +43,6 @@ class environment:
     
     # returns true if the game has ended. False othersie.
     def move(self, direction):
-        # remove tail
-        self.obstacles.remove(self.snake_q.get())
-        self.head = (self.head[0]+mov[direction][0], self.head[1]+mov[direction][1])
         # checks if snake hits an obstacle
         if self.head in self.obstacles:
             return true
@@ -63,6 +60,10 @@ class environment:
             while (coord in self.mice or coord in self.obstacles):
                 coord = (random.randint(0,maze_size), random.randint(0,maze_size))
             self.mice[coord] = points 
+        else:
+            # remove tail
+            self.obstacles.remove(self.snake_q.get())
+            self.head = (self.head[0]+mov[direction][0], self.head[1]+mov[direction][1])
         return false
         
     def see_maze(self):
