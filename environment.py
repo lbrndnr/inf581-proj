@@ -13,6 +13,7 @@ class environment:
     def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3], fixed_obstacles=[(3,4),(3,5),(3,6)]):
         self.game_terminated = False
         self.score = 0
+        self.maze_size = maze_size
         self.snake_q = deque()
         # obstacles are walls + fixed obstacles + the snake itself
         self.obstacles = set()
