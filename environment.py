@@ -63,7 +63,7 @@ class environment:
                 # remove tail
                 self.obstacles.remove(self.snake_q.popleft())
         
-    def see_maze(self):
+    def get_state(self):
         return (self.obstacles, self.mice, self.head, self.curr_direction, self.score, self.game_terminated)
 
     def print_maze(self):
