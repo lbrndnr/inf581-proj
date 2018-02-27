@@ -63,7 +63,7 @@ def get_max_from_power_list(power_list_):
 
 env = environment()
 hit_an_obstacle = False
-depth = 5 ######### parameter to change ##########
+depth = 3 ######### parameter to change ##########
 while hit_an_obstacle == False:
     pl = power_list([0,0,0,0], depth)
     rewards = get_rewards_in_power_list(env, pl)
@@ -71,7 +71,7 @@ while hit_an_obstacle == False:
     env.move(optimal_direction)
     obstacles, mice, head, curr_direction, score, game_terminated = env.get_state()
     hit_an_obstacle = game_terminated
-    
+    ##### IT WORKS! JUST RUN IT! #####
     env.print_maze()
 
 # just to test
