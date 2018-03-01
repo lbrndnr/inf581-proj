@@ -13,7 +13,7 @@ class environment:
     """
     def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3]):
         self.maze = np.zeros((maze_size, maze_size), dtype=int)
-
+        self.direction = np.array([-1, 0])
         self.snake = deque()
         for i in range (initial_snake_size):
             p = (int(maze_size/2+i), int(maze_size/2))
@@ -24,8 +24,9 @@ class environment:
             self.add_mouse(i)
         
     
-    def step(self, direction):
-        head = tuple(np.array(self.snake[0], dtype=int) + vectorize(direction))
+    def step(self, action):
+        new_direction = vectorize(self.direction, action)
+        head = tuple(np.array(self.snake[0], dtype=int) + new_direction)
         ended = False
         reward = 0
 
@@ -42,6 +43,7 @@ class environment:
             
             self.add_mouse(reward)
         
+        self.direction = new_direction
         return (self.state, reward, ended)
     
 
@@ -49,7 +51,7 @@ class environment:
     def state(self):
         head = np.array(self.snake[0], dtype=int)
         tail = np.array(self.snake[-1], dtype=int)
-        return (self.maze, head, tail)
+        return (self.maze, head, tail, self.direction)
 
 
     def check_field(self, p):

@@ -1,23 +1,24 @@
 import numpy as np
 
-UP = 0
+STRAIGHT = 0
 RIGHT = 1
-DOWN = 2
-LEFT = 3
+LEFT = 2
 
-directions = [UP, RIGHT, DOWN, LEFT]
+actions = [STRAIGHT, RIGHT, LEFT]
 
-def vectorize(direction):
-    if direction == UP:
-        return np.array([-1, 0])
-    elif direction == RIGHT:
-        return np.array([0, 1])
-    elif direction == DOWN:
-        return np.array([1, 0])
-    elif direction == LEFT:
-        return np.array([0, -1])
+#given a current direction d as a vector and a new action a, compute the new direction as a vector
+def vectorize(d, a):
+    assert(a >= STRAIGHT and a <= LEFT)
+
+    if a == STRAIGHT:
+        return d
     else:
-        NotImplemented
+        ds = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+        offset = 1 if a == RIGHT else -1
+        curr_idx = ds.index(tuple(d))
+        next_idx = (curr_idx + offset) % len(ds)
+
+        return np.array(ds[next_idx])
 
 
 def vec_to_int(vec, maze_size):
