@@ -30,7 +30,7 @@ def decide(env, state):
     ds = [head + vectorize(d) for d in directions]
     ds = [1 if env.check_field(p) >= 0 else 0 for p in ds]
     
-    mice = np.where( maze > 0 )
+    mice = np.where(maze > 0)
 
     return (vec_to_int(mice[0], maze_size), vec_to_int(head, maze_size), ds)
     
@@ -83,14 +83,3 @@ for i in range(epochs):
     if (i % 100 == 0 and i > 0):    
        print("Episode: ", i, "Average Return: ", returnSum/ float(i))
        returnSum = 0
-
-
-# just to test
-state = env.see_maze()
-obstacles, mice, head, curr_direction, score = state
-#print(obstacles)
-print(mice)
-print(head)
-print(curr_direction)
-
-print(size_of_accessible_region(state))

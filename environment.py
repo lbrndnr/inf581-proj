@@ -59,14 +59,16 @@ class environment:
         
         return self.maze[p]
 
-    # infinite loop if snake gets too long
-    def add_mouse(self, points):
-        select = lambda: tuple(np.random.random_integers(0, self.maze.shape[0]-1, 2))
-        p = select()
 
-        while (self.maze[p] != 0):
-            p = select()
+    def add_mouse(self, points):
+        free_fields = np.where(self.maze == 0)
+        if len(free_fields[0]) == 0:
+            return False
+
+        idx = np.random.randint(0, len(free_fields[0]))
+        p = (free_fields[0][idx], free_fields[1][idx])
 
         self.maze[p] = points
+        return True
 
 
