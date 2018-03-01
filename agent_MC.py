@@ -1,26 +1,6 @@
 import numpy as np
 from environment import *
 from geometry import *
-    
-# the size of the maze region accessible from the snake's head
-# (i.e.: that the snake can go to without hitting an obstacle).
-def size_of_accessible_region(state):
-    return 10
-    # def DFS(tmp_obstacles, coord):
-    #     if coord in tmp_obstacles:
-    #         return 0
-    #     size = 1
-    #     # mark as visited
-    #     tmp_obstacles.add(coord)
-    #     # for each direction, visit adjacent cell
-    #     for dir in range(4):
-    #         size += DFS( tmp_obstacles, (coord[0]+mov[dir][0],coord[1]+mov[dir][1]) )
-    #     return size
-    
-    # obstacles, mice, head, curr_direction, terminated = state        
-    # tmp = obstacles.copy()
-    # tmp.remove(head)
-    # return DFS(tmp, head)
 
 
 def decide(env, state):
@@ -29,6 +9,7 @@ def decide(env, state):
     
     ds = [head + vectorize(d) for d in directions]
     ds = [1 if env.check_field(p) >= 0 else 0 for p in ds]
+    possible_direction = int(''.join(str(e) for e in ds), 2)
     
     mice = np.where(maze > 0)
 
@@ -43,9 +24,10 @@ maze_size = 20
 maze_area = maze_size**2
 n_m = maze_area #coordinates of one mouse
 n_h = maze_area #position of the head
-n_d = len(directions) #possible directions of the head
+n_d = 2**4 #directions the snake can take without hitting an obstacle
+n_a = len(directions) #possible actions
 
-dim = (n_m, n_h, n_d, n_d)
+dim = (n_m, n_h, n_d, n_a)
 qv_mc_table = np.zeros(dim) #This creates our Q-value look-up table
 sa_count    = np.zeros(dim) #Record how many times we've seen a given state-action pair.
 returnSum   = 0
@@ -58,13 +40,14 @@ for i in range(epochs):
    
     vs = []
     va = []
+    length = 0
     
     while not ended:
         d = decide(env, state)
 
         # E-greedy policy
         if (np.random.random() < epsilon or len(vs) == 0):
-            act = np.random.randint(0, n_d)
+            act = np.random.randint(0, n_a)
         else:
             act = np.argmax(qv_mc_table[d[0], d[1], d[2],:]) #select the best action
 
@@ -80,6 +63,8 @@ for i in range(epochs):
         qv_mc_table[d[0], d[1], d[2],a] = qv_mc_table[d[0], d[1], d[2], a]+ (1./sa_count[d[0], d[1], d[2], a])*(reward - qv_mc_table[d[0], d[1], d[2], a])
 
     returnSum = returnSum + reward
+    length += len(vs)
     if (i % 100 == 0 and i > 0):    
-       print("Episode: ", i, "Average Return: ", returnSum/ float(i))
+       print("Episode: ", i, "Average Return: ", returnSum/ float(i), "Average Length: ", length/ float(i))
        returnSum = 0
+       length = 0
