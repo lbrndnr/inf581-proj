@@ -1,82 +1,72 @@
+import numpy as np
 from collections import deque
-import random
+from geometry import *
+
+SNAKE = -1
+WALL = -2
 
 class environment:
-    
-    # mov[direction] is the displacement for the snake's head.
-    mov = [(0,1), (0,-1), (1,0), (-1,0)]
     
     """
     Snake game on a square maze of size maze_size, snake with initial size of initial_snake_size.
     Instead of a single mouse, there may be multiple mice. Their points are given by mice_points list.
     """
-    def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3], fixed_obstacles=[(3,4),(3,5),(3,6)]):
-        self.game_terminated = False
-        self.score = 0
-        self.maze_size = maze_size
-        self.snake_q = deque()
-        # obstacles are walls + fixed obstacles + the snake itself
-        self.obstacles = set()
-        for obs in fixed_obstacles:
-            self.obstacles.add(obs)
-            # maze walls
-            for i in range (maze_size):
-                self.obstacles.add( (-1       ,i        ) );
-                self.obstacles.add( (maze_size,i        ) );
-                self.obstacles.add( (i        ,-1       ) );
-                self.obstacles.add( (i        ,maze_size) );
-        # snake
-        for i in range (initial_snake_size):
-            self.obstacles.add( (0,i) )
-            self.snake_q.append( (0,i) )
-        self.head = (0,initial_snake_size-1)
-        self.curr_direction = 0
-        # mice = dict{ key=coordinate, value=points }
-        self.mice = {}
-        for i in mice_points:
-            # takes care to not place a mouse on the snake or over another mouse
-            coord = (0,0)
-            while (coord in self.mice or coord in self.obstacles):
-                coord = (random.randint(0,maze_size), random.randint(0,maze_size))
-            self.mice[coord] = i
-        
-    def move(self, direction):
-        self.head = (self.head[0]+environment.mov[direction][0], self.head[1]+environment.mov[direction][1])
-        # checks if snake hits an obstacle
-        if self.head in self.obstacles:
-            self.game_terminated = True
-        else:
-            # adds new position
-            self.obstacles.add(self.head)
-            self.snake_q.append(self.head)
-            self.curr_direction = direction
-            # checks if ate a mouse
-            if self.head in self.mice:
-                points = self.mice[self.head]
-                self.score += points
-                # replace eaten mouse in a random position (without another mouse or the snake).
-                del self.mice[self.head]
-                coord = self.head
-                while (coord in self.mice or coord in self.obstacles):
-                    coord = (random.randint(0,self.maze_size), random.randint(0,self.maze_size))
-                self.mice[coord] = points 
-            else:
-                # remove tail
-                self.obstacles.remove(self.snake_q.popleft())
-        
-    def get_state(self):
-        return (self.obstacles, self.mice, self.head, self.curr_direction, self.score, self.game_terminated)
+    def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3]):
+        self.maze = np.zeros((maze_size, maze_size), dtype=int)
 
-    def print_maze(self):
-        print('score =', self.score)
-        for i in range(-1, self.maze_size + 1):
-            print('')
-            for j in range(-1, self.maze_size + 1):
-                if (i,j) in self.obstacles:
-                    print ('@', end='')
-                elif (i,j) in self.mice:
-                    print ('m', end='')
-                else:
-                    print (' ', end='')
+        self.snake = deque()
+        for i in range (initial_snake_size):
+            p = (int(maze_size/2+i), int(maze_size/2))
+            self.maze[p] = SNAKE
+            self.snake.append(p)
+
+        for i in mice_points:
+            self.add_mouse(i)
         
+    
+    def step(self, direction):
+        head = tuple(np.array(self.snake[0], dtype=int) + vectorize(direction))
+        ended = False
+        reward = 0
+
+        if self.check_field(head) < 0:
+            ended = True
+            reward = -1
+        else:
+            reward = self.maze[head]
+            self.maze[head] = SNAKE
+            self.snake.appendleft(head)
+
+            if reward == 0:
+                self.maze[self.snake.pop()] = 0
+            
+            self.add_mouse(reward)
         
+        return (self.state, reward, ended)
+    
+
+    @property
+    def state(self):
+        head = np.array(self.snake[0], dtype=int)
+        tail = np.array(self.snake[-1], dtype=int)
+        return (self.maze, head, tail)
+
+
+    def check_field(self, p):
+        p = p if type(p) is tuple else tuple(p)
+        if p[0] >= self.maze.shape[0] or p[1] >= self.maze.shape[1] or p[0] < 0 or p[1] < 0:
+            return WALL
+        
+        return self.maze[p]
+
+    # infinite loop if snake gets too long
+    def add_mouse(self, points):
+        select = lambda: tuple(np.random.random_integers(0, self.maze.shape[0]-1, 2))
+        p = select()
+
+        while (self.maze[p] != 0):
+            p = select()
+
+        self.maze[p] = points
+
+
