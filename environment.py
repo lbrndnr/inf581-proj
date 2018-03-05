@@ -77,3 +77,23 @@ class environment:
         return True
 
 
+    def print_maze(self):
+        n,m = self.maze.shape
+        char_map = {WALL: "#", SNAKE: "@", 0: " "}
+
+        print((m+2) * "#")
+
+        for i in range(n):
+            line = "#"
+            for j in range(m):
+                v = self.maze[i, j]
+                c = char_map[v] if v in char_map else str(v)
+                line += c
+
+            line += "#"
+            print(line)
+        
+        print((m+2) * "#")
+
+        
+

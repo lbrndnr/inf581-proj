@@ -75,7 +75,7 @@ def train_MC():
     epsilon = 1. # E-greedy
 
     maze_size = 15
-    walls = [(2,2), (2, 3)]
+    walls = [(3,4), (3, 5), (3, 6)]
     dim = decide_dim1(maze_size)
     qv = np.zeros(dim) #This creates our Q-value look-up table
     sa_count = np.zeros(dim) #Record how many times we've seen a given state-action pair.
@@ -128,7 +128,7 @@ def train_QL():
     alpha = 0.1
 
     maze_size = 15
-    walls = [(2,2), (2, 3)]
+    walls = [(3,4), (3, 5), (3, 6)]
     dim = decide_dim2()
     qv = np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
@@ -160,6 +160,7 @@ def train_QL():
 
         epsilon = epsilon*0.9999
         if (i % 100 == 0 and i > 0):
+            env.print_maze()
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
             returnSum = 0
             stepSum = 0
