@@ -70,14 +70,14 @@ def decide_dim2():
     return tuple(3*[n_c] + [n_d, n_a])
 
 
-def train_MC():
+def run_MC(qv_ = None):
     epochs = 500000 # Number of episodes/plays
     epsilon = 1. # E-greedy
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
     dim = decide_dim1(maze_size)
-    qv = np.zeros(dim) #This creates our Q-value look-up table
+    qv = qv_ if qv_ is not None else np.zeros(dim) #This creates our Q-value look-up table
     sa_count = np.zeros(dim) #Record how many times we've seen a given state-action pair.
     returnSum = 0
     stepSum = 0
@@ -120,8 +120,10 @@ def train_MC():
             returnSum = 0
             stepSum = 0
 
+    return qv
 
-def train_QL():
+
+def run_QL(qv_ = None):
     epochs = 500000 # Number of episodes/plays
     epsilon = 1. # E-greedy
     gamma = 0.1
@@ -130,7 +132,7 @@ def train_QL():
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
     dim = decide_dim2()
-    qv = np.zeros(dim) #This creates our Q-value look-up table
+    qv = qv_ if qv_ is not None else np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
 
@@ -164,5 +166,15 @@ def train_QL():
             returnSum = 0
             stepSum = 0
 
-        
-train_QL()
+    return qv
+
+
+def train():
+    qv = run_QL()
+    np.save("qv_QL.npy", qv)
+
+    qv = run_MC()
+    np.save("qv_MC.npy", qv)
+
+
+train()
