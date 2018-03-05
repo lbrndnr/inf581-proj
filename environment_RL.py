@@ -77,11 +77,11 @@ class environment:
         return True
 
 
-    def print_maze(self):
+    def maze_string(self):
         n,m = self.maze.shape
         char_map = {WALL: "#", SNAKE: "@", 0: " "}
 
-        print((m+2) * "#")
+        desc = (m+2) * "#" + "\n"
 
         for i in range(n):
             line = "#"
@@ -91,9 +91,10 @@ class environment:
                 line += c
 
             line += "#"
-            print(line)
+            desc += line + "\n"
         
-        print((m+2) * "#")
+        desc += (m+2) * "#" + "\n"
+        return desc
 
         
 

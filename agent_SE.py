@@ -80,5 +80,4 @@ def run(using_termnal=False):
             print('')
         else:
             env.print_maze()
-
-run(using_termnal=True)
+            

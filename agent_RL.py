@@ -83,16 +83,18 @@ def decide_dim2():
 
 
 #an implementation of the Monte Carlo algorithm
-def run_MC(qv_ = None, epochs = 500000):
+def run_MC(initialQV = None, train = True):
+    epochs = 500000 if train else 1
     epsilon = 1. # E-greedy
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
     dim = decide_dim1(maze_size)
-    qv = qv_ if qv_ is not None else np.zeros(dim) #This creates our Q-value look-up table
+    qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     sa_count = np.zeros(dim) #Record how many times we've seen a given state-action pair.
     returnSum = 0
     stepSum = 0
+    gameplay = []
 
     for i in range(epochs):
         env = environment(maze_size=maze_size, walls=walls) #reset the environment
@@ -104,6 +106,9 @@ def run_MC(qv_ = None, epochs = 500000):
         
         while not ended: #while the snake hasn't eaten itself/Wall
             d = decide1(env, state) #we "compress" the state to make it smaller
+
+            if not train:
+                gameplay.append(env.maze_string())
 
             # E-greedy policy
             if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2],:]) == 0):
@@ -132,11 +137,15 @@ def run_MC(qv_ = None, epochs = 500000):
             returnSum = 0
             stepSum = 0
 
+    if not train:
+        return qv, gameplay
+
     return qv
 
 
 #an implementation of the Q-Learning algorithm
-def run_QL(qv_ = None, epochs = 500000):
+def run_QL(initialQV = None, train = True):
+    epochs = 500000 if train else 1
     epsilon = 1. # E-greedy
     gamma = 0.1
     alpha = 0.1
@@ -144,9 +153,10 @@ def run_QL(qv_ = None, epochs = 500000):
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
     dim = decide_dim2()
-    qv = qv_ if qv_ is not None else np.zeros(dim) #This creates our Q-value look-up table
+    qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
+    gameplay = []
 
     for i in range(epochs):
         env = environment(maze_size=maze_size, walls=walls)
@@ -154,6 +164,9 @@ def run_QL(qv_ = None, epochs = 500000):
         ended = False
         
         while not ended:
+            if not train:
+                gameplay.append(env.maze_string())
+
             d = decide2(env, state)
 
             # E-greedy policy
@@ -178,6 +191,9 @@ def run_QL(qv_ = None, epochs = 500000):
             returnSum = 0
             stepSum = 0
 
+    if not train:
+        return qv, gameplay
+
     return qv
 
 
@@ -189,4 +205,8 @@ def train():
     np.save("qv_MC.npy", qv)
 
 
-train()
+def run(algo, qv, train):
+    if algo == "MC":
+        return run_MC(initialQV=qv, train=train)
+    else:
+        return run_QL(initialQV=qv, train=train)
