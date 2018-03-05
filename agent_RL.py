@@ -70,8 +70,7 @@ def decide_dim2():
     return tuple(3*[n_c] + [n_d, n_a])
 
 
-def run_MC(qv_ = None):
-    epochs = 500000 # Number of episodes/plays
+def run_MC(qv_ = None, epochs = 500000):
     epsilon = 1. # E-greedy
 
     maze_size = 15
@@ -123,8 +122,7 @@ def run_MC(qv_ = None):
     return qv
 
 
-def run_QL(qv_ = None):
-    epochs = 500000 # Number of episodes/plays
+def run_QL(qv_ = None, epochs = 500000):
     epsilon = 1. # E-greedy
     gamma = 0.1
     alpha = 0.1
