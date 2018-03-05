@@ -125,7 +125,7 @@ def train_QL():
     alpha = 0.1
 
     maze_size = 15
-    dim = decide_dim1(maze_size)
+    dim = decide_dim2()
     qv = np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
@@ -136,19 +136,19 @@ def train_QL():
         ended = False
         
         while not ended:
-            d = decide1(env, state)
+            d = decide2(env, state)
 
             # E-greedy policy
-            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2],:]) == 0):
+            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2], d[3],:]) == 0):
                 act = np.random.randint(0, len(actions))
             else:
-                act = np.argmax(qv[d[0], d[1], d[2],:]) #select the best action
+                act = np.argmax(qv[d[0], d[1], d[2], d[3],:]) #select the best action
 
             d = tuple(list(d) + [act]) #append the chosen action to the decision
             
             state_new, reward, ended = env.step(act)
 
-            q_next = 0 if ended else np.max(qv[d[0], d[1], d[2],:])
+            q_next = 0 if ended else np.max(qv[d[0], d[1], d[2], d[3],:])
             qv[d] += alpha*(reward + gamma*q_next  -  qv[d])
             state = state_new
             returnSum += reward
