@@ -1,5 +1,5 @@
 import numpy as np
-from environment import *
+from environment_RL import *
 from geometry import *
 import time
 
@@ -160,7 +160,6 @@ def train_QL():
 
         epsilon = epsilon*0.9999
         if (i % 100 == 0 and i > 0):
-            env.print_maze()
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
             returnSum = 0
             stepSum = 0
