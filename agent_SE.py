@@ -1,7 +1,8 @@
-from environment import environment
+from environment_SE import environment
 import copy
 import numpy as np
 from math import sqrt
+import os
 
 # mov[direction] is the displacement for the snake's head.
 mov = [(0,1), (0,-1), (1,0), (-1,0)]
@@ -61,25 +62,23 @@ def get_max_from_power_list(power_list_):
     else:
         return power_list_     
 
-env = environment()
-hit_an_obstacle = False
-depth = 3 ######### parameter to change ##########
-while hit_an_obstacle == False:
-    pl = power_list([0,0,0,0], depth)
-    rewards = get_rewards_in_power_list(env, pl)
-    optimal_direction = np.argmax([get_max_from_power_list(rewards[i]) for i in range(4)])        
-    env.move(optimal_direction)
-    obstacles, mice, head, curr_direction, score, game_terminated = env.get_state()
-    hit_an_obstacle = game_terminated
-    
-    env.print_maze()
+def run(using_termnal=False):
+    env = environment()
+    hit_an_obstacle = False
+    depth = 3 ######### parameter to change ##########
+    while hit_an_obstacle == False:
+        pl = power_list([0,0,0,0], depth)
+        rewards = get_rewards_in_power_list(env, pl)
+        optimal_direction = np.argmax([get_max_from_power_list(rewards[i]) for i in range(4)])        
+        env.move(optimal_direction)
+        obstacles, mice, head, curr_direction, score, game_terminated = env.get_state()
+        hit_an_obstacle = game_terminated
+        if using_termnal:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print('')
+            env.print_maze()
+            print('')
+        else:
+            env.print_maze()
 
-# just to test
-state = env.get_state()
-obstacles, mice, head, curr_direction, score, game_terminated = state
-#print(obstacles)
-print(mice)
-print(head)
-print(curr_direction)
-
-print(size_of_accessible_region(state))
+run(using_termnal=True)
