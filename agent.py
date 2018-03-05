@@ -1,7 +1,9 @@
 import numpy as np
 from environment import *
 from geometry import *
+import time
 
+np.random.seed(int(time.time()))
 
 def manhattan_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
@@ -73,6 +75,7 @@ def train_MC():
     epsilon = 1. # E-greedy
 
     maze_size = 15
+    walls = [(2,2), (2, 3)]
     dim = decide_dim1(maze_size)
     qv = np.zeros(dim) #This creates our Q-value look-up table
     sa_count = np.zeros(dim) #Record how many times we've seen a given state-action pair.
@@ -80,7 +83,7 @@ def train_MC():
     stepSum = 0
 
     for i in range(epochs):
-        env = environment(maze_size=maze_size)
+        env = environment(maze_size=maze_size, walls=walls)
         state = env.state
         ended = False
         episodeReward = 0
@@ -125,13 +128,14 @@ def train_QL():
     alpha = 0.1
 
     maze_size = 15
+    walls = [(2,2), (2, 3)]
     dim = decide_dim2()
     qv = np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
 
     for i in range(epochs):
-        env = environment(maze_size=maze_size)
+        env = environment(maze_size=maze_size, walls=walls)
         state = env.state
         ended = False
         
