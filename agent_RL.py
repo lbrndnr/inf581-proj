@@ -9,6 +9,7 @@ def manhattan_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
+#this function returns the direction to take in order to reach b from a
 def compute_direction(a, b):
     diff = b - a
     if abs(diff[0]) > abs(diff[1]):
@@ -23,21 +24,27 @@ def compute_direction(a, b):
             return 3 #left
 
 
+#a function that takes the state of the environment into account in order to
+#return a "smaller" state the algorithm can use to learn
 def decide1(env, state):
     maze, head, tail, direction = state
     maze_size = maze.shape[0]
     
+    #the actions the snake can perform without hitting an obstacle
     ds = [head + vectorize(direction, a) for a in actions]
     ds = [1 if env.check_field(p) >= 0 else 0 for p in ds]
     blocked_actions = int("".join(str(e) for e in ds), 2)
     
+    #find the closest mouse using the manhattan distance
     mice = np.where(maze > 0)
     mice = np.transpose(mice)
     closest_mouse = np.argmin([manhattan_distance(head, m) for m in mice])
 
+    #eventually we return the field number of the head and the closest mouse as well as the actions it can do
     return (vec_to_int(head, maze_size), vec_to_int(mice[closest_mouse], maze_size), blocked_actions)
 
 
+#a convenience function that returns the dimensionality of decide1
 def decide_dim1(maze_size):
     maze_area = maze_size**2
     n_c = 4 # direction of the mice
@@ -47,14 +54,18 @@ def decide_dim1(maze_size):
     return (maze_area, maze_area, n_d, n_a)
 
 
+#a function that takes the state of the environment into account in order to
+#return a "smaller" state the algorithm can use to learn
 def decide2(env, state):
     maze, head, tail, direction = state
     maze_size = maze.shape[0]
     
+    #the actions the snake can perform without hitting an obstacle
     ds = [head + vectorize(direction, a) for a in actions]
     ds = [1 if env.check_field(p) >= 0 else 0 for p in ds]
     blocked_actions = int("".join(str(e) for e in ds), 2)
     
+    #an array of directions the snake has to take to reach the mice
     mice = np.where(maze > 0)
     mice = np.transpose(mice)
     mice_directions = [compute_direction(head, m) for m in mice]
@@ -62,6 +73,7 @@ def decide2(env, state):
     return tuple(mice_directions + [blocked_actions])
 
 
+#a convenience function that returns the dimensionality of decide2
 def decide_dim2():
     n_c = 4 # direction of the mice
     n_a = len(actions) #possible actions
@@ -70,6 +82,7 @@ def decide_dim2():
     return tuple(3*[n_c] + [n_d, n_a])
 
 
+#an implementation of the Monte Carlo algorithm
 def run_MC(qv_ = None, epochs = 500000):
     epsilon = 1. # E-greedy
 
@@ -82,15 +95,15 @@ def run_MC(qv_ = None, epochs = 500000):
     stepSum = 0
 
     for i in range(epochs):
-        env = environment(maze_size=maze_size, walls=walls)
+        env = environment(maze_size=maze_size, walls=walls) #reset the environment
         state = env.state
         ended = False
         episodeReward = 0
     
-        ds = []
+        ds = [] #we keep track of all the "decision states"
         
-        while not ended:
-            d = decide1(env, state)
+        while not ended: #while the snake hasn't eaten itself/Wall
+            d = decide1(env, state) #we "compress" the state to make it smaller
 
             # E-greedy policy
             if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2],:]) == 0):
@@ -122,6 +135,7 @@ def run_MC(qv_ = None, epochs = 500000):
     return qv
 
 
+#an implementation of the Q-Learning algorithm
 def run_QL(qv_ = None, epochs = 500000):
     epsilon = 1. # E-greedy
     gamma = 0.1
