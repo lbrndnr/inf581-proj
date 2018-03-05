@@ -2,6 +2,7 @@ import numpy as np
 from environment_RL import *
 from geometry import *
 import time
+import matplotlib.pyplot as plt
 
 np.random.seed(int(time.time()))
 
@@ -95,6 +96,7 @@ def run_MC(initialQV = None, train = True):
     returnSum = 0
     stepSum = 0
     gameplay = []
+    averageReturns = []
 
     for i in range(epochs):
         env = environment(maze_size=maze_size, walls=walls) #reset the environment
@@ -134,13 +136,18 @@ def run_MC(initialQV = None, train = True):
         stepSum += len(ds)
         if (i % 100 == 0 and i > 0):
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
+            averageReturns.append(returnSum/100.0)
             returnSum = 0
             stepSum = 0
 
-    if not train:
-        return qv, gameplay
+    if train:
+        plt.plot(averageReturns)
+        plt.ylabel("Average returns per 100 epochs")
+        plt.show()
 
-    return qv
+        return qv
+    else:
+        return qv, gameplay
 
 
 #an implementation of the Q-Learning algorithm
@@ -157,6 +164,7 @@ def run_QL(initialQV = None, train = True):
     returnSum = 0
     stepSum = 0
     gameplay = []
+    averageReturns = []
 
     for i in range(epochs):
         env = environment(maze_size=maze_size, walls=walls)
@@ -188,13 +196,18 @@ def run_QL(initialQV = None, train = True):
         epsilon = epsilon*0.9999
         if (i % 100 == 0 and i > 0):
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
+            averageReturns.append(returnSum/100.0)
             returnSum = 0
             stepSum = 0
 
-    if not train:
-        return qv, gameplay
+    if train:
+        plt.plot(averageReturns)
+        plt.ylabel("Average returns per 100 epochs")
+        plt.show()
 
-    return qv
+        return qv
+    else:
+        return qv, gameplay
 
 
 def train():
