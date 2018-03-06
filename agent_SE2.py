@@ -59,7 +59,9 @@ def get_rewards_in_power_list(env_to_copy, power_list_, reward_until_now):
             _,reward_step,ended = tmp_environment.step(i)
             if reward_step < 0:
                 reward_step = -10100100
-            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl, reward_until_now + reward_step))
+            if reward_step > 0:
+                reward_step *= 0.2
+            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl, 2 * reward_until_now + reward_step))
         return to_return
     else:
        return reward_until_now + reward(env_to_copy.state) 
