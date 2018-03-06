@@ -182,7 +182,7 @@ def run_QL(initialQV=None, train=True, random=False):
             reward += distance_reward(env, state_new)
 
             q_next = 0 if ended else np.max(qv[d[0], d[1], d[2],:])
-            qv[d] += alpha*(reward + gamma*q_next  -  qv[d])
+            qv[d] += alpha*(reward + gamma*q_next - qv[d])
             state = state_new
             returnSum += reward
             stepSum += 1 
