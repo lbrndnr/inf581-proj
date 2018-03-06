@@ -83,7 +83,7 @@ def decide_dim2():
 
 
 #an implementation of the Monte Carlo algorithm
-def run_MC(initialQV = None, train = True):
+def run_MC(initialQV=None, train=True, random=False):
     epochs = 500000 if train else 1
     epsilon = 1. # E-greedy
 
@@ -95,17 +95,18 @@ def run_MC(initialQV = None, train = True):
     returnSum = 0
     stepSum = 0
     gameplay = []
-    averageReturns = []
+    stats = np.zeros((int(epochs/100), 2))
 
     for i in range(epochs):
-        env = environment(maze_size=maze_size, walls=walls) #reset the environment
+        env = environment.random(maze_size, walls=walls) if random else environment(maze_size=maze_size, walls=walls)
         state = env.state
         ended = False
         episodeReward = 0
+        max_epoch_length = 100
     
         ds = [] #we keep track of all the "decision states"
         
-        while not ended: #while the snake hasn't eaten itself/Wall
+        while not ended and max_epoch_length > 0: #while the snake hasn't eaten itself/Wall
             d = decide1(env, state) #we "compress" the state to make it smaller
 
             if not train:
@@ -124,6 +125,7 @@ def run_MC(initialQV = None, train = True):
             
             state, reward, ended = env.step(act)
             episodeReward += reward
+            max_epoch_length -= 1
         
         epsilon = epsilon*0.9999
 
@@ -138,15 +140,17 @@ def run_MC(initialQV = None, train = True):
             averageReturns.append(returnSum/100.0)
             returnSum = 0
             stepSum = 0
+            stats[int(i/100), 0] = returnSum/100.0
+            stats[int(i/100), 1] = stepSum/100.0
 
     if train:
-        return qv, averageReturns
+        return qv, stats
     else:
         return qv, gameplay
 
 
 #an implementation of the Q-Learning algorithm
-def run_QL(initialQV = None, train = True):
+def run_QL(initialQV=None, train=True, random=False):
     epochs = 500000 if train else 1
     epsilon = 1. # E-greedy
     gamma = 0.1
@@ -159,14 +163,15 @@ def run_QL(initialQV = None, train = True):
     returnSum = 0
     stepSum = 0
     gameplay = []
-    averageReturns = []
+    stats = np.zeros((int(epochs/100), 2))
 
     for i in range(epochs):
-        env = environment(maze_size=maze_size, walls=walls)
+        env = environment.random(maze_size, walls=walls) if random else environment(maze_size=maze_size, walls=walls)
         state = env.state
         ended = False
+        max_epoch_length = 100
         
-        while not ended:
+        while not ended and max_epoch_length > 0:
             if not train:
                 gameplay.append(env.maze_string())
 
@@ -186,29 +191,31 @@ def run_QL(initialQV = None, train = True):
             qv[d] += alpha*(reward + gamma*q_next  -  qv[d])
             state = state_new
             returnSum += reward
-            stepSum += 1  
+            stepSum += 1 
+            max_epoch_length -= 1
 
         epsilon = epsilon*0.9999
         if (i % 100 == 0 and i > 0):
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
-            averageReturns.append(returnSum/100.0)
             returnSum = 0
             stepSum = 0
+            stats[int(i/100), 0] = returnSum/100.0
+            stats[int(i/100), 1] = stepSum/100.0
 
     if train:
-        return qv, averageReturns
+        return qv, stats
     else:
         return qv, gameplay
 
 
 def train():
-    qv, returns = run_QL()
+    qv, stats = run_QL(random=True)
     np.save("qv_QL.npy", qv)
-    np.save("ret_QL.npy", returns)
+    np.save("stats_QL.npy", stats)
 
-    qv, returns = run_MC()
+    qv, stats = run_MC(random=True)
     np.save("qv_MC.npy", qv)
-    np.save("ret_MC.npy", returns)
+    np.save("stats_MC.npy", stats)
 
 
 def run(algo, qv, train):
