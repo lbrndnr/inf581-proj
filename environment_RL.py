@@ -15,7 +15,7 @@ class environment:
         self.maze = np.zeros((maze_size, maze_size), dtype=int)
         self.direction = np.array([-1, 0])
         self.snake = deque()
-        for i in range (initial_snake_size):
+        for i in range(initial_snake_size):
             p = (int(maze_size/2+i), int(maze_size/2))
             self.maze[p] = SNAKE
             self.snake.append(p)
@@ -25,7 +25,42 @@ class environment:
 
         for i in mice_points:
             self.add_mouse(i)
-        
+
+
+    @classmethod
+    def random(cls, maze_size, mice_points=[1,2,3], walls=[]):
+        env = cls(maze_size=maze_size, initial_snake_size=0, mice_points=[], walls=walls)
+
+        maze_area = maze_size**2
+        length = np.random.randint(5, maze_area)
+        p = env.random_free_field()
+        blocked = False
+
+        a_idx = np.random.randint(0, len(actions))
+        a = actions[a_idx]
+
+        env.direction = vectorize(env.direction, a)
+        env.snake.append(p)
+        env.maze[p] = SNAKE
+
+        while not blocked and length > 0:
+            body = [(p[0]+1, p[1]), (p[0]-1, p[1]), (p[0], p[1]-1), (p[0], p[1]+1)]
+            body = [p for p in body if env.check_field(p) == 0]
+            if len(body) == 0:
+                blocked = True
+            else:
+                idx = np.random.randint(0, len(body))
+                p = body[idx]
+
+                env.snake.append(p)
+                env.maze[p] = SNAKE
+                length -= 1
+
+        for i in mice_points:
+            env.add_mouse(i)
+
+        return env
+
     
     def step(self, action):
         new_direction = vectorize(self.direction, action)
@@ -65,13 +100,19 @@ class environment:
         return self.maze[p]
 
 
-    def add_mouse(self, points):
+    def random_free_field(self):
         free_fields = np.where(self.maze == 0)
         if len(free_fields[0]) == 0:
-            return False
+            return None
 
         idx = np.random.randint(0, len(free_fields[0]))
-        p = (free_fields[0][idx], free_fields[1][idx])
+        return (free_fields[0][idx], free_fields[1][idx])
+
+
+    def add_mouse(self, points):
+        p = self.random_free_field()
+        if p is None:
+            return False
 
         self.maze[p] = points
         return True
