@@ -29,15 +29,15 @@ def main():
     print("This is a demo of the algorithms")
 
     #first we run one epoch of the trained MC algorithm
-    count_down("Starting the Monte Carlo algorithm gameplay in {0}")
-    demo("MC")
+    # count_down("Starting the Monte Carlo algorithm gameplay in {0}")
+    # demo("MC")
 
-    #then we run one epoch of the trained QL algorithm
-    count_down("Starting the Q-Learning algorithm gameplay in {0}")
-    demo("QL")
+    # #then we run one epoch of the trained QL algorithm
+    # count_down("Starting the Q-Learning algorithm gameplay in {0}")
+    # demo("QL")
 
     #finally we run an epoch of the SE algorithm
     count_down("Starting the search algorithm gameplay in {0}")
-    agent_SE.run(using_termnal=True)
+    agent_SE.run(using_terminal=True)
 
 main()

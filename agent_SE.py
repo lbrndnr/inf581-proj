@@ -1,4 +1,4 @@
-from environment_SE import environment
+from environment import environment
 import copy
 import numpy as np
 from math import sqrt
@@ -10,34 +10,40 @@ mov = [(0,1), (0,-1), (1,0), (-1,0)]
 # the size of the maze region accessible from the snake's head
 # (i.e.: that the snake can go to without hitting an obstacle).
 def size_of_accessible_region(state):
-    def DFS(tmp_obstacles, coord):
-        if coord in tmp_obstacles:
+    maze, head, tail, direction = state
+    m,n = maze.shape
+    tmp_obstacles = maze.copy()
+    tmp_obstacles[head[0]][head[1]] = -1
+    
+    def DFS(x, y):
+        if x < 0 or x >= m or y < 0 or y >= n:
+            return 0
+        if tmp_obstacles[x][y] < 0:
             return 0
         size = 1
         # mark as visited
-        tmp_obstacles.add(coord)
+        tmp_obstacles[x][y] = -1
         # for each direction, visit adjacent cell
         for dir in range(4):
-            size += DFS( tmp_obstacles, (coord[0]+mov[dir][0],coord[1]+mov[dir][1]) )
+            size += DFS(x+mov[dir][0], y+mov[dir][1])
         return size
     
-    obstacles, mice, head, curr_direction, score, game_terminated = state
-    tmp = obstacles.copy()
-    tmp.remove(head)
-    return DFS(tmp, head)
+    return DFS(head[0], head[1])
+
 
 def reward(state):
-    obstacles, mice, head, curr_direction, score, game_terminated = state
+    maze, head, tail, direction = state
+    m,n = maze.shape
     proximity_to_mice = 0
-    for coord,points in mice.items():
-        dist_to_mouse = sqrt((head[0]-coord[0])**2 + (head[1]-coord[1])**2)
-        if dist_to_mouse != 0:
-            proximity_to_mice += points / dist_to_mouse
-    if game_terminated:
-        return 10 * score - 100100100
-    else:
-        return 10 * score + size_of_accessible_region(state) + proximity_to_mice
-
+    for i in range(m):
+        for j in range(n):
+            if maze[i][j] > 0:
+                dist_to_mouse = sqrt((head[0]-i)**2 + (head[1]-j)**2)
+                if dist_to_mouse != 0:
+                    proximity_to_mice += maze[i][j] / dist_to_mouse
+    if proximity_to_mice > 9:
+        print('AAAAAAA')
+    return size_of_accessible_region(state) + proximity_to_mice
 
 def power_list(list_, power):
     if power == 1:
@@ -45,16 +51,20 @@ def power_list(list_, power):
     else:
         return [power_list(list_, power - 1) for i in list_]
 
-def get_rewards_in_power_list(env_to_copy, power_list_):
+def get_rewards_in_power_list(env_to_copy, power_list_, reward_until_now):
     if type(power_list_) is list:    
         to_return = []
         for i,inner_pl in enumerate(power_list_):
             tmp_environment = copy.deepcopy(env_to_copy)
-            tmp_environment.move(i)
-            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl))
+            _,reward_step,ended = tmp_environment.step(i)
+            if reward_step < 0:
+                reward_step = -10100100
+            if reward_step > 0:
+                reward_step *= 0.2
+            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl, 2 * reward_until_now + reward_step))
         return to_return
     else:
-       return reward(env_to_copy.get_state()) 
+       return reward_until_now + reward(env_to_copy.state) 
 
 def get_max_from_power_list(power_list_):
     if type(power_list_) is list:
@@ -62,23 +72,19 @@ def get_max_from_power_list(power_list_):
     else:
         return power_list_     
 
-def run(using_termnal=False):
-    env = environment()
+def run(using_terminal=False):
+    env = environment(maze_size=15, walls=[(3,4), (3, 5), (3, 6)])
     hit_an_obstacle = False
     depth = 3 ######### parameter to change ##########
     while hit_an_obstacle == False:
-        pl = power_list([0,0,0,0], depth)
-        rewards = get_rewards_in_power_list(env, pl)
-        optimal_direction = np.argmax([get_max_from_power_list(rewards[i]) for i in range(4)])        
-        env.move(optimal_direction)
-        obstacles, mice, head, curr_direction, score, game_terminated = env.get_state()
-        hit_an_obstacle = game_terminated
-        if using_termnal:
+        pl = power_list([0,0,0], depth)
+        rewards = get_rewards_in_power_list(env, pl, 0)
+        optimal_direction = np.argmax([get_max_from_power_list(rewards[i]) for i in range(3)])        
+        state,reward,hit_an_obstacle = env.step(optimal_direction)
+        if using_terminal:
             os.system('cls' if os.name == 'nt' else 'clear')
             print('')
-            env.print_maze()
+            print(env.maze_string())
             print('')
         else:
-            env.print_maze()
-            
-run(using_termnal=True) ########### change to False if not running on terminal
+            print(env.maze_string())

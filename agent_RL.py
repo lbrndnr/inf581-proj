@@ -1,5 +1,5 @@
 import numpy as np
-from environment_RL import *
+from environment import *
 from geometry import *
 import time
 
