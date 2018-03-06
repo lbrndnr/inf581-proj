@@ -137,10 +137,10 @@ def run_MC(initialQV=None, train=True, random=False):
         stepSum += len(ds)
         if (i % 100 == 0 and i > 0):
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
+            stats[int(i/100)-1, 0] = returnSum/100.0
+            stats[int(i/100)-1, 1] = stepSum/100.0
             returnSum = 0
             stepSum = 0
-            stats[int(i/100), 0] = returnSum/100.0
-            stats[int(i/100), 1] = stepSum/100.0
 
     if train:
         return qv, stats
@@ -196,10 +196,11 @@ def run_QL(initialQV=None, train=True, random=False):
         epsilon = epsilon*0.9999
         if (i % 100 == 0 and i > 0):
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
+            stats[int(i/100)-1, 0] = returnSum/100.0
+            stats[int(i/100)-1, 1] = stepSum/100.0
             returnSum = 0
             stepSum = 0
-            stats[int(i/100), 0] = returnSum/100.0
-            stats[int(i/100), 1] = stepSum/100.0
+            
 
     if train:
         return qv, stats
@@ -208,11 +209,11 @@ def run_QL(initialQV=None, train=True, random=False):
 
 
 def train():
-    qv, stats = run_QL(random=True)
+    qv, stats = run_QL()
     np.save("qv_QL.npy", qv)
     np.save("stats_QL.npy", stats)
 
-    qv, stats = run_MC(random=True)
+    qv, stats = run_MC()
     np.save("qv_MC.npy", qv)
     np.save("stats_MC.npy", stats)
 
