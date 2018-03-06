@@ -137,7 +137,6 @@ def run_MC(initialQV=None, train=True, random=False):
         stepSum += len(ds)
         if (i % 100 == 0 and i > 0):
             print("Episode: ", i, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
-            averageReturns.append(returnSum/100.0)
             returnSum = 0
             stepSum = 0
             stats[int(i/100), 0] = returnSum/100.0
