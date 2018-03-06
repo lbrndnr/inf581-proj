@@ -81,3 +81,4 @@ def run(using_termnal=False):
         else:
             env.print_maze()
             
+run(using_termnal=True) ########### change to False if not running on terminal
