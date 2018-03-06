@@ -5,25 +5,6 @@ import time
 
 np.random.seed(int(time.time()))
 
-def manhattan_distance(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-
-#this function returns the direction to take in order to reach b from a
-def compute_direction(a, b):
-    diff = b - a
-    if abs(diff[0]) > abs(diff[1]):
-        if diff[0] > 0:
-            return 0 #up
-        else:
-            return 1 #down
-    else:
-        if diff[1] > 0:
-            return 2 #right
-        else:
-            return 3 #left
-
-
 #a function that takes the state of the environment into account in order to
 #return a "smaller" state the algorithm can use to learn
 def compress1(env, state):
@@ -82,9 +63,22 @@ def compress_dim2():
     return tuple(3*[n_c] + [n_d, n_a])
 
 
+def distance_reward(env, state):
+    maze, head, tail, direction = state
+    maze_size = maze.shape[0]
+    max_distance = maze_size*2
+    
+    #an array of directions the snake has to take to reach the mice
+    mice = np.where(maze > 0)
+    mice = np.transpose(mice)
+    rewards = [env.maze[tuple(m)]*(manhattan_distance(head, m)/max_distance) for m in mice]
+
+    return sum(rewards)
+
+
 #an implementation of the Monte Carlo algorithm
 def run_MC(initialQV=None, train=True, random=False):
-    epochs = 500000 if train else 1
+    epochs = 100000 if train else 1
     epsilon = 1. # E-greedy
 
     maze_size = 15
@@ -150,14 +144,14 @@ def run_MC(initialQV=None, train=True, random=False):
 
 #an implementation of the Q-Learning algorithm
 def run_QL(initialQV=None, train=True, random=False):
-    epochs = 500000 if train else 1
+    epochs = 100000 if train else 1
     epsilon = 1. # E-greedy
     gamma = 0.1
     alpha = 0.1
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
-    dim = compress_dim2()
+    dim = compress_dim1(maze_size)
     qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
@@ -174,19 +168,20 @@ def run_QL(initialQV=None, train=True, random=False):
             if not train:
                 gameplay.append(env.maze_string())
 
-            d = compress2(env, state)
+            d = compress1(env, state)
 
             # E-greedy policy
-            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2], d[3],:]) == 0):
+            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2],:]) == 0):
                 act = np.random.randint(0, len(actions))
             else:
-                act = np.argmax(qv[d[0], d[1], d[2], d[3],:]) #select the best action
+                act = np.argmax(qv[d[0], d[1], d[2],:]) #select the best action
 
             d = tuple(list(d) + [act]) #append the chosen action to the decision
             
             state_new, reward, ended = env.step(act)
+            reward += distance_reward(env, state_new)
 
-            q_next = 0 if ended else np.max(qv[d[0], d[1], d[2], d[3],:])
+            q_next = 0 if ended else np.max(qv[d[0], d[1], d[2],:])
             qv[d] += alpha*(reward + gamma*q_next  -  qv[d])
             state = state_new
             returnSum += reward
@@ -223,3 +218,6 @@ def run(algo, qv, train):
         return run_MC(initialQV=qv, train=train)
     else:
         return run_QL(initialQV=qv, train=train)
+
+
+train()

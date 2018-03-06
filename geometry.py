@@ -30,3 +30,22 @@ def vec_to_int(vec, maze_size):
 
 def int_to_vec(i, maze_size):
     return np.array([i/maze_size, i%maze_size])
+
+
+def manhattan_distance(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+#this function returns the direction to take in order to reach b from a
+def compute_direction(a, b):
+    diff = b - a
+    if abs(diff[0]) > abs(diff[1]):
+        if diff[0] > 0:
+            return 0 #up
+        else:
+            return 1 #down
+    else:
+        if diff[1] > 0:
+            return 2 #right
+        else:
+            return 3 #left
