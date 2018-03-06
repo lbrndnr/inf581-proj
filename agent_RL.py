@@ -71,7 +71,7 @@ def distance_reward(env, state):
     #an array of directions the snake has to take to reach the mice
     mice = np.where(maze > 0)
     mice = np.transpose(mice)
-    rewards = [env.maze[tuple(m)]*(manhattan_distance(head, m)/max_distance) for m in mice]
+    rewards = [env.maze[tuple(m)]*(1-manhattan_distance(head, m)/max_distance) for m in mice]
 
     return sum(rewards)
 
@@ -218,6 +218,3 @@ def run(algo, qv, train):
         return run_MC(initialQV=qv, train=train)
     else:
         return run_QL(initialQV=qv, train=train)
-
-
-train()
