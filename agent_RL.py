@@ -2,7 +2,6 @@ import numpy as np
 from environment_RL import *
 from geometry import *
 import time
-import matplotlib.pyplot as plt
 
 np.random.seed(int(time.time()))
 
@@ -141,11 +140,7 @@ def run_MC(initialQV = None, train = True):
             stepSum = 0
 
     if train:
-        plt.plot(averageReturns)
-        plt.ylabel("Average returns per 100 epochs")
-        plt.show()
-
-        return qv
+        return qv, averageReturns
     else:
         return qv, gameplay
 
@@ -201,21 +196,19 @@ def run_QL(initialQV = None, train = True):
             stepSum = 0
 
     if train:
-        plt.plot(averageReturns)
-        plt.ylabel("Average returns per 100 epochs")
-        plt.show()
-
-        return qv
+        return qv, averageReturns
     else:
         return qv, gameplay
 
 
 def train():
-    qv = run_QL()
+    qv, returns = run_QL()
     np.save("qv_QL.npy", qv)
+    np.save("ret_QL.npy", returns)
 
-    qv = run_MC()
+    qv, returns = run_MC()
     np.save("qv_MC.npy", qv)
+    np.save("ret_MC.npy", returns)
 
 
 def run(algo, qv, train):
