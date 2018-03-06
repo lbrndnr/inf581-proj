@@ -26,7 +26,7 @@ def compute_direction(a, b):
 
 #a function that takes the state of the environment into account in order to
 #return a "smaller" state the algorithm can use to learn
-def decide1(env, state):
+def compress1(env, state):
     maze, head, tail, direction = state
     maze_size = maze.shape[0]
     
@@ -44,8 +44,8 @@ def decide1(env, state):
     return (vec_to_int(head, maze_size), vec_to_int(mice[closest_mouse], maze_size), blocked_actions)
 
 
-#a convenience function that returns the dimensionality of decide1
-def decide_dim1(maze_size):
+#a convenience function that returns the dimensionality of compress1
+def compress_dim1(maze_size):
     maze_area = maze_size**2
     n_c = 4 # direction of the mice
     n_a = len(actions) #possible actions
@@ -56,7 +56,7 @@ def decide_dim1(maze_size):
 
 #a function that takes the state of the environment into account in order to
 #return a "smaller" state the algorithm can use to learn
-def decide2(env, state):
+def compress2(env, state):
     maze, head, tail, direction = state
     maze_size = maze.shape[0]
     
@@ -73,8 +73,8 @@ def decide2(env, state):
     return tuple(mice_directions + [blocked_actions])
 
 
-#a convenience function that returns the dimensionality of decide2
-def decide_dim2():
+#a convenience function that returns the dimensionality of compress2
+def compress_dim2():
     n_c = 4 # direction of the mice
     n_a = len(actions) #possible actions
     n_d = 2**n_a #directions the snake can take without hitting an obstacle
@@ -89,7 +89,7 @@ def run_MC(initialQV=None, train=True, random=False):
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
-    dim = decide_dim1(maze_size)
+    dim = compress_dim1(maze_size)
     qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     sa_count = np.zeros(dim) #Record how many times we've seen a given state-action pair.
     returnSum = 0
@@ -106,8 +106,8 @@ def run_MC(initialQV=None, train=True, random=False):
     
         ds = [] #we keep track of all the "decision states"
         
-        while not ended and max_epoch_length > 0: #while the snake hasn't eaten itself/Wall
-            d = decide1(env, state) #we "compress" the state to make it smaller
+        while not ended and (not random or max_epoch_length > 0): #while the snake hasn't eaten itself/Wall
+            d = compress1(env, state) #we "compress" the state to make it smaller
 
             if not train:
                 gameplay.append(env.maze_string())
@@ -157,7 +157,7 @@ def run_QL(initialQV=None, train=True, random=False):
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
-    dim = decide_dim2()
+    dim = compress_dim2()
     qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
@@ -170,11 +170,11 @@ def run_QL(initialQV=None, train=True, random=False):
         ended = False
         max_epoch_length = 100
         
-        while not ended and max_epoch_length > 0:
+        while not ended and (not random or max_epoch_length > 0):
             if not train:
                 gameplay.append(env.maze_string())
 
-            d = decide2(env, state)
+            d = compress2(env, state)
 
             # E-greedy policy
             if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2], d[3],:]) == 0):
