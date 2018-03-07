@@ -79,11 +79,11 @@ def distance_reward(env, state):
 #an implementation of the Monte Carlo algorithm
 def run_MC(initialQV=None, train=True, random=False):
     epochs = 100000 if train else 1
-    epsilon = 1. # E-greedy
+    epsilon = 1. if train else 0 # E-greedy
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
-    dim = compress_dim1(maze_size)
+    dim = compress_dim2()
     qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     sa_count = np.zeros(dim) #Record how many times we've seen a given state-action pair.
     returnSum = 0
@@ -101,16 +101,16 @@ def run_MC(initialQV=None, train=True, random=False):
         ds = [] #we keep track of all the "decision states"
         
         while not ended and (not random or max_epoch_length > 0): #while the snake hasn't eaten itself/Wall
-            d = compress1(env, state) #we "compress" the state to make it smaller
+            d = compress2(env, state) #we "compress" the state to make it smaller
 
             if not train:
                 gameplay.append(env.maze_string())
 
             # E-greedy policy
-            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2],:]) == 0):
+            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2], d[3],:]) == 0):
                 act = np.random.randint(0, len(actions))
             else:
-                act = np.argmax(qv[d[0], d[1], d[2],:]) #select the best action
+                act = np.argmax(qv[d[0], d[1], d[2], d[3],:]) #select the best action
 
             d = tuple(list(d) + [act]) #append the chosen action to the decision
 
@@ -145,13 +145,13 @@ def run_MC(initialQV=None, train=True, random=False):
 #an implementation of the Q-Learning algorithm
 def run_QL(initialQV=None, train=True, random=False):
     epochs = 100000 if train else 1
-    epsilon = 1. # E-greedy
+    epsilon = 1. if train else 0 # E-greedy
     gamma = 0.1
     alpha = 0.1
 
     maze_size = 15
     walls = [(3,4), (3, 5), (3, 6)]
-    dim = compress_dim1(maze_size)
+    dim = compress_dim2()
     qv = initialQV if initialQV is not None else np.zeros(dim) #This creates our Q-value look-up table
     returnSum = 0
     stepSum = 0
@@ -168,20 +168,19 @@ def run_QL(initialQV=None, train=True, random=False):
             if not train:
                 gameplay.append(env.maze_string())
 
-            d = compress1(env, state)
+            d = compress2(env, state)
 
             # E-greedy policy
-            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2],:]) == 0):
+            if (np.random.random() < epsilon or np.count_nonzero(qv[d[0], d[1], d[2], d[3],:]) == 0):
                 act = np.random.randint(0, len(actions))
             else:
-                act = np.argmax(qv[d[0], d[1], d[2],:]) #select the best action
+                act = np.argmax(qv[d[0], d[1], d[2], d[3],:]) #select the best action
 
             d = tuple(list(d) + [act]) #append the chosen action to the decision
             
             state_new, reward, ended = env.step(act)
-            reward += distance_reward(env, state_new)
 
-            q_next = 0 if ended else np.max(qv[d[0], d[1], d[2],:])
+            q_next = 0 if ended else np.max(qv[d[0], d[1], d[2], d[3],:])
             qv[d] += alpha*(reward + gamma*q_next - qv[d])
             state = state_new
             returnSum += reward
