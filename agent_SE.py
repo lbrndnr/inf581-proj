@@ -13,7 +13,7 @@ def size_of_accessible_region(state):
     maze, head, tail, direction = state
     m,n = maze.shape
     tmp_obstacles = maze.copy()
-    tmp_obstacles[head[0]][head[1]] = -1
+    tmp_obstacles[head[0]][head[1]] = 0
     
     def DFS(x, y):
         if x < 0 or x >= m or y < 0 or y >= n:
@@ -31,19 +31,18 @@ def size_of_accessible_region(state):
     return DFS(head[0], head[1])
 
 
-def reward(state):
+def p_mice(state):
     maze, head, tail, direction = state
     m,n = maze.shape
     proximity_to_mice = 0
     for i in range(m):
         for j in range(n):
             if maze[i][j] > 0:
-                dist_to_mouse = sqrt((head[0]-i)**2 + (head[1]-j)**2)
+                dist_to_mouse = abs(head[0]-i) + abs(head[1]-j)
+                #dist_to_mouse = sqrt((head[0]-i)**2 + (head[1]-j)**2)
                 if dist_to_mouse != 0:
                     proximity_to_mice += maze[i][j] / dist_to_mouse
-    if proximity_to_mice > 9:
-        print('AAAAAAA')
-    return size_of_accessible_region(state) + proximity_to_mice
+    return proximity_to_mice
 
 def power_list(list_, power):
     if power == 1:
@@ -60,11 +59,11 @@ def get_rewards_in_power_list(env_to_copy, power_list_, reward_until_now):
             if reward_step < 0:
                 reward_step = -10100100
             if reward_step > 0:
-                reward_step *= 0.2
+                reward_step *= 1
             to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl, 2 * reward_until_now + reward_step))
         return to_return
     else:
-       return reward_until_now + reward(env_to_copy.state) 
+       return reward_until_now + p_mice(env_to_copy.state) + size_of_accessible_region(env_to_copy.state)
 
 def get_max_from_power_list(power_list_):
     if type(power_list_) is list:
@@ -73,10 +72,13 @@ def get_max_from_power_list(power_list_):
         return power_list_     
 
 def run(using_terminal=False):
-    env = environment(maze_size=15, walls=[(3,4), (3, 5), (3, 6)])
+    env = environment()
     hit_an_obstacle = False
-    depth = 3 ######### parameter to change ##########
-    while hit_an_obstacle == False:
+    depth = 2 ######### parameter to change ##########
+    max_n_iter = 100100100
+    n_iter = 0
+    while hit_an_obstacle == False and n_iter < max_n_iter:
+        n_iter += 1
         pl = power_list([0,0,0], depth)
         rewards = get_rewards_in_power_list(env, pl, 0)
         optimal_direction = np.argmax([get_max_from_power_list(rewards[i]) for i in range(3)])        
