@@ -2,7 +2,7 @@
 
 Run the demo in the terminal using
 ```python
-    python3 demo.py
+python3 demo.py
 ```
 
 - `agent_RL.py` incorporates all the Reinforcement Learning algorithms used for this project.
