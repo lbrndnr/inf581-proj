@@ -59,8 +59,8 @@ def get_rewards_in_power_list(env_to_copy, power_list_, reward_until_now):
             if reward_step < 0:
                 reward_step = -10100100
             if reward_step > 0:
-                reward_step *= 0.2
-            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl, 4 * reward_until_now + reward_step))
+                reward_step *= 1
+            to_return.append(get_rewards_in_power_list(tmp_environment, inner_pl, 2 * reward_until_now + reward_step))
         return to_return
     else:
        return reward_until_now + p_mice(env_to_copy.state) + size_of_accessible_region(env_to_copy.state)
@@ -74,7 +74,7 @@ def get_max_from_power_list(power_list_):
 def run(using_terminal=False):
     env = environment()
     hit_an_obstacle = False
-    depth = 3 ######### parameter to change ##########
+    depth = 2 ######### parameter to change ##########
     max_n_iter = 100100100
     n_iter = 0
     while hit_an_obstacle == False and n_iter < max_n_iter:
