@@ -1,15 +1,21 @@
+import os
 import tensorflow as tf
 import numpy as np
 
 
 class dqn:
 
-    def __init__(self, n_actions, input_shape, alpha, gamma, dropout_prob):
+    def __init__(self, n_actions, input_shape, alpha, gamma, dropout_prob, path=None):
         self.gamma = gamma
 
-        self.__init_network(n_actions, input_shape, alpha, dropout_prob)
+        if path is None:
+            self.__init_network(n_actions, input_shape, alpha, dropout_prob)
+        
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
+
+        if path is not None:
+            self.load(path)
 
 
     def __init_network(self, n_actions, input_shape, alpha, dropout_prob):
@@ -42,48 +48,45 @@ class dqn:
 
         # Dense Layer
         flatten = tf.reshape(conv2, [-1, 20*20*2*16])
-        dropout = tf.nn.dropout(flatten, dropout_prob)
-        fc1 = tf.layers.dense(dropout, units=512, activation=tf.nn.relu, name="fc1")
+        fc1 = tf.layers.dense(flatten, units=512, activation=tf.nn.relu, name="fc1")
         
         self.action_q = tf.layers.dense(fc1, units=n_actions, activation=tf.nn.relu, name="action_q")
+        tf.add_to_collection("predict", self.action_q)
 
         loss = tf.reduce_mean(tf.square(self.action_q - self.tf_q_targets))
         self.optimizer = tf.train.AdamOptimizer(alpha).minimize(loss)
+        tf.add_to_collection("predict", self.optimizer)
+        
 
 
     def train(self, batch):
-        x_train = []
-        t_train = []
+        mazes = []
+        q_targets = []
 
         # Generate training set and targets
-        for datapoint in batch:
-            x_train.append(datapoint['source'].astype(np.float64))
+        for t in batch:
+            mazes.append(t.s)
 
             # Get the current Q-values for the next state and select the best
-            next_state_pred = self.predict(datapoint['dest'].astype(np.float64)).ravel()
+            next_state_pred = self.predict(t.s_next)
             next_q_value = np.max(next_state_pred)
 
             # The error must be 0 on all actions except the one taken
-            t = list(self.predict(datapoint['source'])[0])
-            if datapoint['final']:
-                t[datapoint['action']] = datapoint['reward']
-            else:
-                t[datapoint['action']] = datapoint['reward'] + \
-                                         self.gamma * next_q_value
+            q = self.predict(t.s)
+            q[t.a] = t.r if t.done else t.r + self.gamma * next_q_value
 
-            t_train.append(t)
+            q_targets.append(q)
 
-        # Prepare inputs and targets
-        x_train = np.asarray(x_train).squeeze()
-        t_train = np.asarray(t_train).squeeze()
+        mazes = np.asarray(mazes).squeeze()
+        q_targets = np.asarray(q_targets).squeeze()
 
-        self.sess.run(self.optimizer, feed_dict={self.tf_mazes:x_train, self.tf_q_targets:t_train})
+        self.sess.run(self.optimizer, feed_dict={self.tf_mazes: mazes, self.tf_q_targets: q_targets})
 
 
     def predict(self, state):
         state = state.astype(np.float64)
         q = self.sess.run(self.action_q, feed_dict={self.tf_mazes: state})
-        return q
+        return q.ravel()
 
 
     def save(self, path):
@@ -92,5 +95,13 @@ class dqn:
     
 
     def load(self, path):
-        saver = tf.train.Saver()
-        saver.restore(self.sess, path)
+        p, _ = os.path.split(path)
+
+        saver = tf.train.import_meta_graph(path + ".meta")
+        saver.restore(self.sess, tf.train.latest_checkpoint(p))
+
+        graph = tf.get_default_graph()
+        self.tf_mazes = graph.get_tensor_by_name("inputs/maze:0")
+        self.tf_q_targets = graph.get_tensor_by_name("inputs/q_target:0")
+        self.action_q = graph.get_collection("predict")[0]
+        self.optimizer = graph.get_collection("predict")[1]

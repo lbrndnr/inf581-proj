@@ -1,38 +1,37 @@
-from collections import deque
-import random
+from collections import namedtuple
 import numpy as np
+
+
+class trans:
+
+    def __init__(self, s, a, r, s_next, done):
+        self.s = s
+        self.a = a
+        self.r = r
+        self.s_next = s_next
+        self.done = done
+
 
 class memory:
 
-    def __init__(self, n_actions, max_memory=1024):
-        self.max_memory = max_memory
-        self.n_actions = n_actions
+    def __init__(self, max_transitions):
+        self.max_transitions = max_transitions
         self.reset()
 
 
     def reset(self):
-        self.mem = deque()
+        self.transitions = []
 
 
-    def add(self, s, a, r, s_next, game_over):
-        self.mem.append((s, a, r, s_next, game_over))
-        if len(self.mem) > self.max_memory:
-            self.mem.popleft()
+    @property
+    def is_full(self):
+        return len(self.transitions) >= self.max_transitions
 
 
-    def random_batch(self, batch_size, gamma):
-        batch_size = min(batch_size, len(self.mem))
-        batch = random.sample(self.mem, batch_size)
+    def extend(self, ts):     
+        self.transitions.extend(ts)
 
-        select = lambda idx: np.array([m[idx] for m in batch])
 
-        states = select(0)
-        actions = select(1)
-        rewards = select(2).repeat(self.n_actions).reshape((batch_size, self.n_actions))
-        next_states = select(3)
-        game_overs = select(4).repeat(self.n_actions).reshape((batch_size, self.n_actions))
-
-        for m in batch:
-            self.mem.remove(m)    
+    def randomized_batch(self):
+        return np.random.permutation(self.transitions)[:self.max_transitions]
         
-        return states, actions, rewards, next_states, game_overs, batch_size
