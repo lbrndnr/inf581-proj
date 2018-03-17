@@ -5,7 +5,7 @@ import agent_RL
 import agent_SE
 
 def demo(algo):
-    filename = "results/qv_" + algo + "_comp2.npy"
+    filename = "res/qv_" + algo + "_comp2.npy"
     qv = np.load(filename)
 
     _, gameplay = agent_RL.run(algo, qv, False)

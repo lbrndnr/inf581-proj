@@ -11,21 +11,31 @@ class environment:
     Snake game on a square maze of size maze_size, snake with initial size of initial_snake_size.
     Instead of a single mouse, there may be multiple mice. Their points are given by mice_points list.
     """
-    def __init__(self, maze_size=20, initial_snake_size=5, mice_points=[1,2,3], walls=[]):
-        self.maze = np.zeros((maze_size, maze_size), dtype=int)
+    def __init__(self, maze_size=20, mice_points=[1,2,3], walls=[]):
+        self.maze_shape = (maze_size, maze_size)
+        self.mice_points = mice_points
+        self.walls = walls
+
+        self.reset()
+    
+
+    def reset(self):
+        self.maze = np.zeros(self.maze_shape, dtype=int)
         self.direction = np.array([-1, 0])
         self.snake = deque()
-        for i in range(initial_snake_size):
-            p = (int(maze_size/2+i), int(maze_size/2))
+        for i in range(5):
+            p = (int(self.maze_shape[0]/2+i), int(self.maze_shape[1]/2))
             self.maze[p] = SNAKE
             self.snake.append(p)
 
-        for p in walls:
+        for p in self.walls:
             self.maze[p] = WALL
 
-        for i in mice_points:
+        for i in self.mice_points:
             self.add_mouse(i)
 
+        return self.state
+            
 
     @classmethod
     def random(cls, maze_size, mice_points=[1,2,3], walls=[]):
