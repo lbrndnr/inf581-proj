@@ -1,7 +1,7 @@
 import numpy as np
 import atexit
 import functools
-from DQN import dqn
+from DQN_tf import dqn
 from environment import environment
 from geometry import actions
 from memory import *
@@ -28,12 +28,13 @@ class agent_dqn:
         epsilon = 1.0
         training_count = 0
         episodes = 0
+        max_episode_length = 500
 
         while training_count < max_training_count and (True if max_episodes is None else episodes < max_episodes):
             self.env.reset()
             done = False
             state = [self.env.state[0], self.env.state[0]]
-            next_state = state
+            next_state = [self.env.state[0], self.env.state[0]]
             episode_reward = 0
             experience_buffer = []  # This will store the SARS tuples at each episode
 
@@ -54,8 +55,12 @@ class agent_dqn:
                 # Change current state
                 state = list(next_state)
 
-                # Add the episode to the experience buffer
-            print(episode_reward, len(experience_buffer))
+                if len(experience_buffer) > max_episode_length:
+                    break
+
+            if not update:
+                print(episode_reward, len(experience_buffer))
+            
             if episode_reward >= 0 and len(experience_buffer) >= 5 and update:
                 exp_backup_counter += len(experience_buffer)
                 print('Adding episode to experiences - Score: %s; Episode length: %s' % (episode_reward+1, len(experience_buffer)))
