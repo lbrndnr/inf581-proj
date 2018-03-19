@@ -9,9 +9,9 @@ from memory import *
 
 class agent_dqn:
 
-    def __init__(self, env, batch_size=100, n_frames=2, alpha=0.005, gamma=0.9, dropout_prob=0.1, path=None):
+    def __init__(self, env, max_memory=1000, n_frames=2, alpha=0.01, gamma=0.9, dropout_prob=0.1, path=None):
         self.env = env
-        self.experience = memory(batch_size)
+        self.experience = memory(max_memory)
 
         input_shape = tuple([n_frames] + list(self.env.maze_shape))
         self.net = dqn(len(actions), input_shape, alpha, gamma, dropout_prob, path=path)
@@ -61,13 +61,13 @@ class agent_dqn:
 
             if update:
                 self.experience.extend(experience_buffer)
-                batch = self.experience.randomized_batch()
-                self.net.train(batch)  # Train the DQN
+                batch = self.experience.randomized_batch(50)
+                loss = self.net.train(batch)  # Train the DQN
 
-                summary = 'Episode {:5d}/{:5d} | Exploration {:.2f} | ' + \
+                summary = 'Episode {:5d}/{:5d} | Exploration {:.2f} | Loss {:.2f} | ' + \
                       'Episode Length {:4d} | Total Reward {:4d}'
                 print(summary.format(
-                    e + 1, episodes, exploration_rate, len(experience_buffer), episode_reward
+                    e + 1, episodes, exploration_rate, loss, len(experience_buffer), episode_reward
                 ))
             
             if exploration_rate > min_exploration_rate:

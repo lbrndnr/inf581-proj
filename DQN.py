@@ -34,13 +34,10 @@ class dqn:
         self.model.add(Activation('relu'))
         self.model.add(Dense(n_actions))
 
-        self.optimizer = Adam()
-
         if path is not None:
             self.load(load_path)
 
-        self.model.compile(loss='mean_squared_error', optimizer=self.optimizer,
-                           metrics=['accuracy'])
+        self.model.compile(RMSprop(), 'MSE')
 
 
     def train(self, batch):
@@ -61,16 +58,10 @@ class dqn:
 
             t_train.append(t)
 
-        # Prepare inputs and targets
         x_train = np.asarray(x_train).squeeze()
         t_train = np.asarray(t_train).squeeze()
 
-        # Train the model for one epoch
-        h = self.model.fit(x_train,
-                           t_train,
-                           batch_size=32,
-                           nb_epoch=1, 
-                           verbose=0)
+        return float(self.model.train_on_batch(x_train, t_train))
 
 
     def predict(self, state):

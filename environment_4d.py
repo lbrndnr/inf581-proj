@@ -80,6 +80,7 @@ class environment:
             ended = True
             reward = -1
         else:
+            self.maze = self.maze.copy()
             reward = self.maze[head]
             self.maze[head] = SNAKE
             self.snake.appendleft(head)

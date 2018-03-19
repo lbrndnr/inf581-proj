@@ -34,6 +34,6 @@ class memory:
             self.transitions.popleft()
 
 
-    def randomized_batch(self):
-        return np.random.permutation(self.transitions)[:self.max_transitions]
+    def randomized_batch(self, batch_size):
+        return np.random.permutation(self.transitions)[:min(batch_size, self.max_transitions)]
         
