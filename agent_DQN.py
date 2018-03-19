@@ -5,15 +5,18 @@ from DQN import dqn
 from environment_3d import environment
 from geometry_3d import actions
 from memory import *
+from collections import deque
+import itertools
 
 
 class agent_dqn:
 
-    def __init__(self, env, max_memory=1000, alpha=0.01, gamma=0.9, dropout_prob=0.1, path=None):
+    def __init__(self, env, num_frames=4, max_memory=1000, alpha=0.01, gamma=0.9, dropout_prob=0.1, path=None):
         self.env = env
         self.experience = memory(max_memory)
+        self.num_frames = num_frames
 
-        input_shape = tuple([2] + list(self.env.maze_shape))
+        input_shape = tuple([self.num_frames] + list(self.env.maze_shape))
         self.net = dqn(len(actions), input_shape, alpha, gamma, dropout_prob, path=path)
 
 
@@ -32,11 +35,16 @@ class agent_dqn:
         returnSum = 0
         stepSum = 0
 
+        current_state = lambda d: np.asarray([list(itertools.islice(d, 0, self.num_frames))])
+        next_state = lambda d: np.asarray([list(itertools.islice(d, 1, self.num_frames+1))])
+
         for e in range(episodes):
             self.env.reset()
             done = False
-            state = [self.env.state[0], self.env.state[0]]
-            next_state = [self.env.state[0], self.env.state[0]]
+            states = deque()
+            for i in range(self.num_frames):
+                states.append(self.env.state[0])
+
             episode_reward = 0
             experience_buffer = []  # This will store the SARS tuples at each episode
 
@@ -44,17 +52,18 @@ class agent_dqn:
                 if (np.random.random() < exploration_rate) and update:
                     a = np.random.randint(0, len(actions))
                 else:
-                    a = self.get_action(np.asarray([state]))
+                    a = self.get_action(current_state(states))
 
                 s, r, done = self.env.step(a)
-                next_state[1] = s[0]
+                states.append(s[0])
 
                 # Add SARS tuple to experience_buffer
-                experience_buffer.append(trans(np.asarray([state]), a, r, np.asarray([next_state]), done))
+                source_frames = current_state(states)
+                dest_frames = next_state(states)
+                experience_buffer.append(trans(source_frames, a, r, dest_frames, done))
                 episode_reward += r
 
-                # Change current state
-                state = list(next_state)
+                states.popleft()
 
                 if len(experience_buffer) > max_episode_length:
                     break
