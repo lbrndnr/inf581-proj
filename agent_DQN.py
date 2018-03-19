@@ -9,11 +9,11 @@ from memory import *
 
 class agent_dqn:
 
-    def __init__(self, env, max_memory=1000, n_frames=2, alpha=0.01, gamma=0.9, dropout_prob=0.1, path=None):
+    def __init__(self, env, max_memory=1000, alpha=0.01, gamma=0.9, dropout_prob=0.1, path=None):
         self.env = env
         self.experience = memory(max_memory)
 
-        input_shape = tuple([n_frames] + list(self.env.maze_shape))
+        input_shape = tuple([2] + list(self.env.maze_shape))
         self.net = dqn(len(actions), input_shape, alpha, gamma, dropout_prob, path=path)
 
 
@@ -22,10 +22,10 @@ class agent_dqn:
         return np.argmax(q_values)
 
 
-    def train(self, episodes=30000, update=True):
+    def train(self, episodes=60000, update=True):
         max_episode_length = 1000
 
-        max_exploration_rate, min_exploration_rate = (1.0, 0.1)
+        max_exploration_rate, min_exploration_rate = (1.0, 0.3)
         exploration_decay = ((max_exploration_rate - min_exploration_rate) / (episodes * 0.8))
         exploration_rate = max_exploration_rate
         stats = np.zeros((int(episodes/100), 2))
