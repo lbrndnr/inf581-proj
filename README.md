@@ -25,6 +25,6 @@ The different implementations of the environment and geometry functions were use
 To run any RL algorithm developed for this project `numpy` is necessary. Additionally, depending on the implementation, the DQN agent requires `tensorflow`, or `keras` and `theano` respectively.
 
 ## Sources
-- P.J Kindermans, [Deep Q Networks in Tensorflow](https://github.com/pikinder/DQN), 2017
+- P. J. Kindermans, [Deep Q Networks in Tensorflow](https://github.com/pikinder/DQN), 2017
 - D. Grattarola, [Playing Snake with Deep Q-Learning](https://github.com/danielegrattarola/deep-q-snake), 2015
 - Y. Gutz, [snake-ai-reinforcement](https://github.com/YuriyGuts/snake-ai-reinforcement), 2017
