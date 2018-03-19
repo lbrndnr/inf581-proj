@@ -1,6 +1,6 @@
 import numpy as np
-from environment import *
-from geometry import *
+from environment_3d import *
+from geometry_3d import *
 import time
 
 np.random.seed(int(time.time()))

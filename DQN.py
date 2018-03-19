@@ -12,27 +12,26 @@ class dqn:
         self.dropout_prob = dropout_prob
 
         # Define neural network
-        self.model.add(BatchNormalization(axis=1, input_shape=input_shape))
-        self.model.add(Convolution2D(32, 2, 2, border_mode='valid',
-                                     subsample=(2, 2), dim_ordering='th'))
+        self.model.add(Conv2D(
+            16,
+            kernel_size=(3, 3),
+            strides=(1, 1),
+            data_format='channels_first',
+            input_shape=input_shape
+        ))
+        self.model.add(Activation('relu'))
+        self.model.add(Conv2D(
+            32,
+            kernel_size=(3, 3),
+            strides=(1, 1),
+            data_format='channels_first'
+        ))
         self.model.add(Activation('relu'))
 
-        self.model.add(BatchNormalization(axis=1))
-        self.model.add(Convolution2D(64, 2, 2, border_mode='valid',
-                                     subsample=(2, 2), dim_ordering='th'))
-        self.model.add(Activation('relu'))
-
-        self.model.add(BatchNormalization(axis=1))
-        self.model.add(Convolution2D(64, 3, 3, border_mode='valid',
-                                     subsample=(2, 2), dim_ordering='th'))
-        self.model.add(Activation('relu'))
-
+        # Dense layers.
         self.model.add(Flatten())
-
-        self.model.add(Dropout(self.dropout_prob))
-        self.model.add(Dense(512))
+        self.model.add(Dense(256))
         self.model.add(Activation('relu'))
-
         self.model.add(Dense(n_actions))
 
         self.optimizer = Adam()
@@ -70,7 +69,8 @@ class dqn:
         h = self.model.fit(x_train,
                            t_train,
                            batch_size=32,
-                           nb_epoch=1)
+                           nb_epoch=1, 
+                           verbose=0)
 
 
     def predict(self, state):

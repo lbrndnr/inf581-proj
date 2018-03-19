@@ -1,4 +1,4 @@
-from environment import environment
+from environment_3d import environment
 import copy
 import numpy as np
 from math import sqrt

@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import deque
 import numpy as np
 
 
@@ -20,7 +20,7 @@ class memory:
 
 
     def reset(self):
-        self.transitions = []
+        self.transitions = deque()
 
 
     @property
@@ -30,6 +30,8 @@ class memory:
 
     def extend(self, ts):     
         self.transitions.extend(ts)
+        while self.is_full:
+            self.transitions.popleft()
 
 
     def randomized_batch(self):
