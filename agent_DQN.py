@@ -28,6 +28,9 @@ class agent_dqn:
         max_exploration_rate, min_exploration_rate = (1.0, 0.1)
         exploration_decay = ((max_exploration_rate - min_exploration_rate) / (episodes * 0.8))
         exploration_rate = max_exploration_rate
+        stats = np.zeros((int(episodes/100), 2))
+        returnSum = 0
+        stepSum = 0
 
         for e in range(episodes):
             self.env.reset()
@@ -70,6 +73,16 @@ class agent_dqn:
             if exploration_rate > min_exploration_rate:
                 exploration_rate -= exploration_decay
 
+            returnSum += episode_reward
+            stepSum += len(experience_buffer)
+            if (e % 100 == 0 and e > 0):
+                print("Summary: ", e+1, "Average Return: ", returnSum/100.0, "Average Steps: ", stepSum/100.0)
+                stats[int(e/100)-1, 0] = returnSum/100.0
+                stats[int(e/100)-1, 1] = stepSum/100.0
+                returnSum = 0
+                stepSum = 0
+
+        return stats
 
 
 if __name__ == "__main__":
@@ -82,5 +95,7 @@ if __name__ == "__main__":
     save_f = functools.partial(agent.net.save, path)
     atexit.register(save_f)
 
-    agent.train()
-    agent.net.save()
+    stats = agent.train()
+    agent.net.save(path)
+
+    np.save("stats_DQN.npy", stats)
